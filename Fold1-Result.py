@@ -54,7 +54,7 @@ print('Cuda is available?', cuda_yes)
 device = torch.device("cuda:0" if cuda_yes else "cpu")
 print('Device:', device)
 
-data_dir = os.path.join( './content/Peyman-Fold1-Original/data/Peyman-Fold1-Original/')
+data_dir = os.path.join( './content/Peyman-Fold1-Original-Phrase/data/Fold1/')
 # "Whether to run training."
 do_train = True
 # "Whether to run eval on the dev set."
@@ -74,7 +74,7 @@ weight_decay_crf_fc = 5e-6 #0.005
 total_train_epochs = 20
 gradient_accumulation_steps = 1
 warmup_proportion = 0.1
-output_dir = './content/Peyman-Fold1-Original/output/'
+output_dir = './content/Peyman-Fold1-Original-Phrase/output/'
 bert_model_scale = 'bert-base-multilingual-cased'
 do_lower_case = False
 # eval_batch_size = 8
@@ -182,7 +182,7 @@ class CoNLLDataProcessor(DataProcessor):
     '''
 
     def __init__(self):
-        self._label_types = [ 'X', '[CLS]', '[SEP]', 'O', 'B_LOC', 'I_LOC', 'B_PER', 'I_PER', 'B_ORG', 'I_ORG','B_TIM','I_TIM', 'B_DAT', 'I_DAT', 'B_MON', 'I_MON', 'B_PCT', 'I_PCT']
+        self._label_types = [ 'X', '[CLS]', '[SEP]', 'O', 'B-LOC', 'I-LOC', 'B-PER', 'I-PER', 'B-ORG', 'I-ORG','B-TIM','I-TIM', 'B-DAT', 'I-DAT', 'B-MON', 'I-MON', 'B-PCT', 'I-PCT']
         self._num_labels = len(self._label_types)
         self._label_map = {label: i for i,
                            label in enumerate(self._label_types)}
@@ -351,7 +351,7 @@ def f1_score_report(y_true, y_pred, _id):
     
 def report(y_true, y_pred):
     '''
-    list= [ 'X', '[CLS]', '[SEP]', 'O', 'B_LOC', 'I_LOC', 'B_PER', 'I_PER', 'B_ORG', 'I_ORG','B_TIM','I_TIM', 'B_DAT', 'I_DAT', 'B_MON', 'I_MON', 'B_PCT', 'I_PCT']
+    list=  [ 'X', '[CLS]', '[SEP]', 'O', 'B-LOC', 'I-LOC', 'B-PER', 'I-PER', 'B-ORG', 'I-ORG','B-TIM','I-TIM', 'B-DAT', 'I-DAT', 'B-MON', 'I-MON', 'B-PCT', 'I-PCT']
         self._num_labels = len(self._label_types)
     '''
     
@@ -881,18 +881,19 @@ def evaluate(model, predict_dataloader, batch_size, epoch_th, dataset_name):
     #print(all_preds)
     all_labels_convert=[]
     all_preds_convert=[]
-    #label_list =
-    #label_map = {i : label for i, label in enumerate(label_list)}
-    #for j in range (len(all_labels)):
-     #   all_labels_convert.append(label_map[all_labels[j]])
+    label_list =  [ 'X', '[CLS]', '[SEP]', 'O', 'B-LOC', 'I-LOC', 'B-PER', 'I-PER', 'B-ORG', 'I-ORG','B-TIM','I-TIM', 'B-DAT', 'I-DAT', 'B-MON', 'I-MON', 'B-PCT', 'I-PCT']
+    label_map = {i : label for i, label in enumerate(label_list)}
+    for j in range (len(all_labels)):
+        all_labels_convert.append(label_map[all_labels[j]])
         
-    #for j in range (len(all_preds)):
-    #   all_preds_convert.append(label_map[all_preds[j]])
+    for j in range (len(all_preds)):
+       all_preds_convert.append(label_map[all_preds[j]])
 
-    #print(all_labels_convert)
-    #print(all_preds_convert)
-    #report = classification_report(all_labels_convert, all_preds_convert,digits=4)
-    report(np.array(all_labels), np.array(all_preds))
+    print(all_labels_convert)
+    print(all_preds_convert)
+    report = classification_report(all_labels_convert, all_preds_convert,digits=4)
+    print(report)
+    #report(np.array(all_labels), np.array(all_preds))
     end = time.time()
     print('Epoch:%d, Acc:%.2f, Precision: %.2f, Recall: %.2f, F1: %.2f on %s, Spend:%.3f minutes for evaluation' \
         % (epoch_th, 100.*test_acc, 100.*precision, 100.*recall, 100.*f1, dataset_name,(end-start)/60.0))
